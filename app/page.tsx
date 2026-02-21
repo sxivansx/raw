@@ -16,10 +16,22 @@ type Note = {
 };
 
 type OSTheme = "system7" | "aqua" | "win98" | "winxp";
+const USER_ID_STORAGE_KEY = "raw:user-id";
+
+function generateUserId() {
+  if (
+    typeof window !== "undefined" &&
+    typeof window.crypto?.randomUUID === "function"
+  ) {
+    return window.crypto.randomUUID();
+  }
+  return `user-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+}
 
 export default function NotesApp() {
   const [notes, setNotes] = useState<Note[]>([]);
   const [loading, setLoading] = useState(true);
+  const [userId, setUserId] = useState<string | null>(null);
   
   // Note formulation
   const [selectedNoteId, setSelectedNoteId] = useState<string | null>(null);
@@ -157,17 +169,39 @@ export default function NotesApp() {
     },
   });
 
+  useEffect(() => {
+    const existingId = localStorage.getItem(USER_ID_STORAGE_KEY)?.trim();
+    if (existingId) {
+      setUserId(existingId);
+      return;
+    }
+
+    const newId = generateUserId();
+    localStorage.setItem(USER_ID_STORAGE_KEY, newId);
+    setUserId(newId);
+  }, []);
+
+  const apiFetch = async (input: string, init: RequestInit = {}) => {
+    if (!userId) {
+      throw new Error("Missing user id");
+    }
+    const headers = new Headers(init.headers || {});
+    headers.set("x-user-id", userId);
+    return fetch(input, { ...init, headers });
+  };
+
   // Fetch notes
   const fetchedRef = useRef(false);
   useEffect(() => {
+    if (!userId) return;
     if (fetchedRef.current) return;
     fetchedRef.current = true;
     fetchNotes();
-  }, []);
+  }, [userId]);
 
   const fetchNotes = async () => {
     try {
-      const res = await fetch("/api/notes");
+      const res = await apiFetch("/api/notes");
       const data = await res.json();
       if (data.notes) {
         if (data.notes.length === 0) {
@@ -183,7 +217,7 @@ export default function NotesApp() {
           ];
           const created = await Promise.all(
             welcomeNotes.map((note) =>
-              fetch("/api/notes", {
+              apiFetch("/api/notes", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(note),
@@ -228,11 +262,11 @@ export default function NotesApp() {
   };
 
   const saveNote = async () => {
-    if (!title) return;
+    if (!title || !userId) return;
     
     try {
       const isUpdating = Boolean(selectedNoteId);
-      const res = await fetch(
+      const res = await apiFetch(
         isUpdating ? `/api/notes/${selectedNoteId}` : "/api/notes",
         {
           method: isUpdating ? "PATCH" : "POST",
@@ -268,7 +302,8 @@ export default function NotesApp() {
     }
 
     try {
-      const res = await fetch(`/api/notes?id=${encodeURIComponent(selectedNoteId)}`, {
+      if (!userId) return;
+      const res = await apiFetch(`/api/notes?id=${encodeURIComponent(selectedNoteId)}`, {
         method: "DELETE",
       });
       if (!res.ok) {

@@ -1,10 +1,17 @@
 import { NextResponse } from "next/server";
 
 import connectToDatabase from "../../../../lib/db";
+import {
+  getUserIdFromRequest,
+  missingUserIdResponse,
+} from "../../../../lib/user";
 import Note from "../../../../models/Note";
 
 export async function PATCH(request, { params }) {
   try {
+    const userId = getUserIdFromRequest(request);
+    if (!userId) return missingUserIdResponse();
+
     const id =
       params?.id || request.nextUrl?.pathname?.split("/").filter(Boolean).pop();
     if (!id) {
@@ -23,8 +30,8 @@ export async function PATCH(request, { params }) {
 
     await connectToDatabase();
 
-    const note = await Note.findByIdAndUpdate(
-      id,
+    const note = await Note.findOneAndUpdate(
+      { _id: id, userId },
       {
         title: title.trim(),
         content: typeof content === "string" ? content.trim() : "",
@@ -51,6 +58,9 @@ export async function PATCH(request, { params }) {
 
 export async function DELETE(request, { params }) {
   try {
+    const userId = getUserIdFromRequest(request);
+    if (!userId) return missingUserIdResponse();
+
     const id =
       params?.id || request.nextUrl?.pathname?.split("/").filter(Boolean).pop();
     if (!id) {
@@ -59,7 +69,7 @@ export async function DELETE(request, { params }) {
 
     await connectToDatabase();
 
-    const note = await Note.findByIdAndDelete(id).lean();
+    const note = await Note.findOneAndDelete({ _id: id, userId }).lean();
     if (!note) {
       return NextResponse.json({ error: "Note not found" }, { status: 404 });
     }

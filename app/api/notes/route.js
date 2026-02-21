@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 
 import connectToDatabase from "../../../lib/db";
+import {
+  getUserIdFromRequest,
+  missingUserIdResponse,
+} from "../../../lib/user";
 import Note from "../../../models/Note";
 
 function normalizeTags(tags) {
@@ -13,6 +17,9 @@ function normalizeTags(tags) {
 
 export async function POST(request) {
   try {
+    const userId = getUserIdFromRequest(request);
+    if (!userId) return missingUserIdResponse();
+
     const body = await request.json();
     const { title, content, tags, pinned, archived } = body || {};
 
@@ -26,6 +33,7 @@ export async function POST(request) {
     await connectToDatabase();
 
     const note = await Note.create({
+      userId,
       title: title.trim(),
       content: typeof content === "string" ? content.trim() : undefined,
       tags: normalizeTags(tags),
@@ -43,11 +51,14 @@ export async function POST(request) {
   }
 }
 
-export async function GET() {
+export async function GET(request) {
   try {
+    const userId = getUserIdFromRequest(request);
+    if (!userId) return missingUserIdResponse();
+
     await connectToDatabase();
 
-    const notes = await Note.find({})
+    const notes = await Note.find({ userId })
       .sort({ updatedAt: -1, createdAt: -1 })
       .lean();
 
@@ -63,6 +74,9 @@ export async function GET() {
 
 export async function DELETE(request) {
   try {
+    const userId = getUserIdFromRequest(request);
+    if (!userId) return missingUserIdResponse();
+
     const id = request.nextUrl?.searchParams?.get("id");
     if (!id) {
       return NextResponse.json({ error: "Missing note id" }, { status: 400 });
@@ -70,7 +84,7 @@ export async function DELETE(request) {
 
     await connectToDatabase();
 
-    const note = await Note.findByIdAndDelete(id).lean();
+    const note = await Note.findOneAndDelete({ _id: id, userId }).lean();
     if (!note) {
       return NextResponse.json({ error: "Note not found" }, { status: 404 });
     }
