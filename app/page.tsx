@@ -32,10 +32,6 @@ export default function NotesApp() {
   const [viewMode, setViewMode] = useState<"list" | "gallery">("list");
   const [showFormatMenu, setShowFormatMenu] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const mediaStreamRef = useRef<MediaStream | null>(null);
-  const audioChunksRef = useRef<Blob[]>([]);
-  const [isRecording, setIsRecording] = useState(false);
   const [statusMessage, setStatusMessage] = useState("");
 
   // OS Theme
@@ -328,17 +324,6 @@ export default function NotesApp() {
     return () => clearTimeout(timer);
   }, [statusMessage]);
 
-  useEffect(() => {
-    return () => {
-      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
-        mediaRecorderRef.current.stop();
-      }
-      if (mediaStreamRef.current) {
-        mediaStreamRef.current.getTracks().forEach((track) => track.stop());
-      }
-    };
-  }, []);
-
   const formatDate = (dateString: string) => {
     const d = new Date(dateString);
     const day = d.getDate().toString().padStart(2, '0');
@@ -405,59 +390,13 @@ export default function NotesApp() {
     reader.readAsDataURL(file);
   };
 
-  const toggleRecording = async () => {
-    try {
-      if (isRecording && mediaRecorderRef.current) {
-        mediaRecorderRef.current.stop();
-        setIsRecording(false);
-        return;
-      }
-
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      mediaStreamRef.current = stream;
-
-      const recorder = new MediaRecorder(stream);
-      mediaRecorderRef.current = recorder;
-      audioChunksRef.current = [];
-
-      recorder.ondataavailable = (event) => {
-        if (event.data && event.data.size > 0) {
-          audioChunksRef.current.push(event.data);
-        }
-      };
-
-      recorder.onstop = () => {
-        const blob = new Blob(audioChunksRef.current, { type: "audio/webm" });
-        const reader = new FileReader();
-        reader.onload = () => {
-          const result = reader.result;
-          if (typeof result === "string") {
-            editor?.chain().focus().insertContent(`<audio controls src="${result}"></audio>`).run();
-          }
-        };
-        reader.readAsDataURL(blob);
-
-        if (mediaStreamRef.current) {
-          mediaStreamRef.current.getTracks().forEach((track) => track.stop());
-          mediaStreamRef.current = null;
-        }
-      };
-
-      recorder.start();
-      setIsRecording(true);
-    } catch (error) {
-      console.error("Failed to start recording:", error);
-      setIsRecording(false);
-    }
-  };
-
   const themeConfig = {
     aqua: {
       bg: "bg-white",
       text: "text-[#333]",
       border: "border-[#8a8a8a]",
       titleBar: "bg-gradient-to-b from-[#f4f5f5] via-[#d6d6d6] to-[#c2c2c2] shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] h-[22px]",
-      toolbar: "bg-[#e0e0e0] shadow-[0_1px_2px_rgba(0,0,0,0.1)] h-[44px]",
+      toolbar: "bg-[#e0e0e0] shadow-[0_1px_2px_rgba(0,0,0,0.1)] min-h-[44px]",
       toolbarPinstripes: "repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(0,0,0,0.05) 1px, rgba(0,0,0,0.05) 2px)",
       button: "bg-gradient-to-b from-[#fdfdfd] to-[#dcdcdc] border border-[#9e9e9e] shadow-[0_1px_0_rgba(255,255,255,0.8)_inset,0_1px_1px_rgba(0,0,0,0.1)] active:bg-gradient-to-b active:from-[#dcdcdc] active:to-[#fdfdfd] active:shadow-inner rounded text-[#666]",
       sidebar: "bg-[#fdfdfd]",
@@ -470,7 +409,7 @@ export default function NotesApp() {
       text: "text-black",
       border: "border-black",
       titleBar: "bg-white border-b border-black h-[20px] shadow-[0_1px_0_black]",
-      toolbar: "bg-white border-b border-black h-[40px]",
+      toolbar: "bg-white border-b border-black min-h-[40px]",
       toolbarPinstripes: "none",
       button: "bg-white border border-black shadow-[1px_1px_0_black] active:translate-y-px active:shadow-none rounded-none text-black",
       sidebar: "bg-white",
@@ -483,7 +422,7 @@ export default function NotesApp() {
       text: "text-black",
       border: "border-[#808080]",
       titleBar: "bg-gradient-to-r from-[#000080] to-[#1084d0] h-[24px] text-white font-bold tracking-wide",
-      toolbar: "bg-[#c0c0c0] border-b border-[#fff] shadow-[0_1px_0_#808080] h-[40px]",
+      toolbar: "bg-[#c0c0c0] border-b border-[#fff] shadow-[0_1px_0_#808080] min-h-[40px]",
       toolbarPinstripes: "none",
       button: "bg-[#c0c0c0] border-t border-l border-[#fff] border-r border-b border-[#808080] shadow-[1px_1px_0_#000] active:border-t-[#808080] active:border-l-[#808080] active:border-r-[#fff] active:border-b-[#fff] active:shadow-none active:translate-y-[1px] active:translate-x-[1px] rounded-none text-black",
       sidebar: "bg-white border-inset border-2 border-[#808080] shadow-[inset_1px_1px_0_#000,1px_1px_0_#fff]",
@@ -496,7 +435,7 @@ export default function NotesApp() {
       text: "text-black",
       border: "border-[#0054e3]",
       titleBar: "bg-gradient-to-b from-[#0058e6] via-[#3a93ff] to-[#0058e6] h-[30px] text-white font-bold shadow-[0_1px_2px_rgba(0,0,0,0.5)] rounded-t-lg",
-      toolbar: "bg-gradient-to-b from-[#f9f8f6] to-[#dcd9ce] border-b border-[#d0caba] h-[44px]",
+      toolbar: "bg-gradient-to-b from-[#f9f8f6] to-[#dcd9ce] border-b border-[#d0caba] min-h-[44px]",
       toolbarPinstripes: "none",
       button: "bg-transparent hover:bg-white hover:border-[#316ac5] hover:shadow-[0_1px_1px_rgba(0,0,0,0.1)] active:bg-[#e3e1d6] border border-transparent rounded text-black transition-colors",
       sidebar: "bg-white border-r border-[#8f8f8f]",
@@ -509,7 +448,7 @@ export default function NotesApp() {
   const t = themeConfig[theme];
 
   return (
-    <div className={`h-screen w-screen flex flex-col font-sans select-none overflow-hidden bg-transparent`}>
+    <div className={`h-screen w-screen flex flex-col font-sans select-none overflow-hidden bg-transparent ${t.text}`}>
       
       {/* Dynamic Theme Styles for the Editor Elements */}
       <style dangerouslySetInnerHTML={{__html: `
@@ -615,12 +554,12 @@ export default function NotesApp() {
         </div>
 
         {/* Toolbar */}
-        <div className={`${t.toolbar} flex relative z-10 w-full overflow-hidden`}>
+        <div className={`${t.toolbar} flex relative z-20 w-full`}>
           {theme === 'aqua' && <div className="absolute inset-0 pointer-events-none" style={{ background: t.toolbarPinstripes }}></div>}
           
-          <div className="flex items-center justify-between w-full px-2 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+          <div className="flex flex-wrap items-center justify-between w-full px-2 py-1.5 gap-y-2">
             {/* Left Icons */}
-            <div className="flex items-center gap-1 md:gap-2 relative z-10 h-full flex-shrink-0 mr-4">
+            <div className="flex items-center gap-1 md:gap-2 relative z-10 mr-4">
               {/* Mobile Back Button */}
               <div 
                 onClick={() => {
@@ -636,7 +575,11 @@ export default function NotesApp() {
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line></svg>
               </div>
               <div onClick={() => setViewMode(v => v === "list" ? "gallery" : "list")} className={`w-[28px] h-[24px] flex items-center justify-center cursor-pointer ${t.button}`}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+                {viewMode === "list" ? (
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                ) : (
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+                )}
               </div>
               <div
                 onClick={deleteSelectedNote}
@@ -647,7 +590,7 @@ export default function NotesApp() {
             </div>
 
             {/* Right Icons */}
-            <div className="flex items-center gap-1 relative z-10 h-full flex-shrink-0">
+            <div className="flex flex-wrap items-center gap-1 relative z-10">
               <div onClick={handleNewNote} className={`w-[28px] h-[24px] flex items-center justify-center cursor-pointer mr-2 ${t.button}`}>
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
               </div>
@@ -702,13 +645,6 @@ export default function NotesApp() {
                 className={`w-[28px] h-[24px] flex items-center justify-center cursor-pointer ${t.button}`}
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="3" y1="15" x2="21" y2="15"></line><line x1="9" y1="3" x2="9" y2="21"></line><line x1="15" y1="3" x2="15" y2="21"></line></svg>
-              </div>
-
-              <div
-                onClick={toggleRecording}
-                className={`w-[28px] h-[24px] flex items-center justify-center cursor-pointer ${t.button} ${isRecording ? "bg-gradient-to-b from-[#ff8b8b] to-[#e85e5e] border-[#c14a4a] text-white" : ""}`}
-              >
-                <svg width="11" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2c-1.7 0-3 1.2-3 2.6v6.8c0 1.4 1.3 2.6 3 2.6s3-1.2 3-2.6V4.6C15 3.2 13.7 2 12 2z"></path><path d="M19 10v1.6c0 3.5-2.9 6.4-6.5 6.4h-1c-3.6 0-6.5-2.9-6.5-6.4V10"></path><line x1="12" y1="18" x2="12" y2="22"></line><line x1="8" y1="22" x2="16" y2="22"></line></svg>
               </div>
 
               <div
