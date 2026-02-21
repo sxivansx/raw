@@ -1,4 +1,4 @@
-# Notes
+# raw
 
 A fun, slightly nostalgic notes app built as a small weekend project.  
 It’s meant to feel playful and fast, like the good old days.  

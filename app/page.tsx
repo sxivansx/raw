@@ -174,7 +174,7 @@ export default function NotesApp() {
         if (data.notes.length === 0) {
           const welcomeNotes = [
             {
-              title: "Welcome to Notes",
+              title: "Welcome to raw",
               content: "Hey there, Gen Z mode on. >.<",
             },
             {
@@ -569,7 +569,7 @@ export default function NotesApp() {
                 <div className="w-[11px] h-[11px] rounded-full bg-gradient-to-b from-[#ffbd2e] to-[#dea123] border border-[#d69818] shadow-inner"></div>
                 <div className="w-[11px] h-[11px] rounded-full bg-gradient-to-b from-[#28c940] to-[#1aab29] border border-[#169d23] shadow-inner"></div>
               </div>
-              <div className="font-bold text-[#333333] text-[13px] tracking-wide absolute left-1/2 -translate-x-1/2" style={{ textShadow: "0 1px 0 rgba(255,255,255,0.8)"}}>Notes</div>
+              <div className="font-bold text-[#333333] text-[13px] tracking-wide absolute left-1/2 -translate-x-1/2" style={{ textShadow: "0 1px 0 rgba(255,255,255,0.8)"}}>raw</div>
               <div className="w-10 h-[14px] rounded-full border border-[#999] bg-[#d9d9d9] flex items-center justify-center mr-1 shadow-inner opacity-60">
                 <div className="w-6 h-[2px] bg-[#aaa] rounded-full"></div>
               </div>
@@ -580,7 +580,7 @@ export default function NotesApp() {
             <>
               <div className="w-[12px] h-[12px] border border-black bg-white flex items-center justify-center"></div>
               <div className="flex-1 h-3 mx-2" style={{ background: "repeating-linear-gradient(to bottom, transparent, transparent 1px, black 1px, black 2px)" }}></div>
-              <div className="font-bold px-2 bg-white">Notes</div>
+              <div className="font-bold px-2 bg-white">raw</div>
               <div className="flex-1 h-3 mx-2" style={{ background: "repeating-linear-gradient(to bottom, transparent, transparent 1px, black 1px, black 2px)" }}></div>
               <div className="w-[12px] h-[12px] border border-black bg-white flex items-center justify-center"><div className="w-1.5 h-1.5 border border-black"></div></div>
             </>
@@ -589,7 +589,7 @@ export default function NotesApp() {
           {theme === 'win98' && (
             <>
               <div className="flex items-center gap-1 font-bold text-[12px]">
-                <span className="text-[14px]">📝</span> Notes
+                <span className="text-[14px]">📝</span> raw
               </div>
               <div className="flex gap-1">
                 <div className="w-4 h-4 bg-[#c0c0c0] border-t border-l border-[#fff] border-r border-b border-[#808080] shadow-[1px_1px_0_#000] text-black flex items-center justify-center font-bold text-[10px]">_</div>
@@ -602,7 +602,7 @@ export default function NotesApp() {
           {theme === 'winxp' && (
             <>
               <div className="flex items-center gap-1 font-bold text-[13px] text-white" style={{ textShadow: "1px 1px 2px black" }}>
-                <span className="text-[16px]">📝</span> Notes
+                <span className="text-[16px]">📝</span> raw
               </div>
               <div className="flex gap-[2px]">
                 <div className="w-6 h-6 rounded-sm bg-gradient-to-b from-[#5c96f2] to-[#205fd6] border border-[#fff] border-opacity-40 flex items-center justify-center text-white text-lg hover:brightness-110 cursor-pointer shadow-sm pb-2">_</div>
