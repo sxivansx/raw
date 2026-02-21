@@ -62,24 +62,6 @@ body {
   margin-top: 0.2rem;
 }
 
-.tiptap table {
-  border-collapse: collapse;
-  width: 100%;
-  margin: 0.75rem 0;
-}
-
-.tiptap table td,
-.tiptap table th {
-  border: 1px solid #d1d1d6;
-  padding: 6px 8px;
-  vertical-align: top;
-}
-
-.tiptap table th {
-  background: #f5f5f5;
-  font-weight: 600;
-}
-
 .tiptap img {
   max-width: 100%;
   border-radius: 6px;

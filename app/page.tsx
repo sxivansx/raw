@@ -510,6 +510,52 @@ export default function NotesApp() {
 
   return (
     <div className={`h-screen w-screen flex flex-col font-sans select-none overflow-hidden bg-transparent`}>
+      
+      {/* Dynamic Theme Styles for the Editor Elements */}
+      <style dangerouslySetInnerHTML={{__html: `
+        .ProseMirror table {
+          border-collapse: collapse;
+          table-layout: fixed;
+          width: 100%;
+          margin: 1rem 0;
+          overflow: hidden;
+          background: ${theme === 'winxp' ? '#fff' : theme === 'system7' ? '#fff' : theme === 'win98' ? '#fff' : 'transparent'};
+        }
+        .ProseMirror td,
+        .ProseMirror th {
+          min-width: 1em;
+          border: ${theme === 'system7' ? '2px solid black' : theme === 'win98' ? '1px solid #808080' : theme === 'winxp' ? '1px solid #d0d0d0' : '1px solid #d1d1d6'};
+          padding: 6px 10px;
+          vertical-align: top;
+          box-sizing: border-box;
+          position: relative;
+        }
+        .ProseMirror th {
+          font-weight: bold;
+          text-align: left;
+          background-color: ${theme === 'system7' ? 'black' : theme === 'win98' ? '#c0c0c0' : theme === 'winxp' ? '#ece9d8' : 'rgba(0, 0, 0, 0.05)'};
+          color: ${theme === 'system7' ? 'white' : 'inherit'};
+        }
+        .ProseMirror .selectedCell:after {
+          z-index: 2;
+          position: absolute;
+          content: "";
+          left: 0; right: 0; top: 0; bottom: 0;
+          background: ${theme === 'system7' ? 'rgba(0,0,0,0.3)' : 'rgba(200, 200, 255, 0.4)'};
+          pointer-events: none;
+        }
+        .ProseMirror .column-resize-handle {
+          position: absolute;
+          right: -2px;
+          top: 0;
+          bottom: -2px;
+          width: 4px;
+          background-color: ${theme === 'system7' ? 'black' : '#adf'};
+          pointer-events: none;
+        }
+        .ProseMirror p { margin-bottom: 0.5rem; }
+      `}} />
+
       {/* Main App Window */}
       <div className={`flex-1 flex flex-col shadow-2xl ${t.bg} border-0 overflow-hidden relative z-10`}>
         
