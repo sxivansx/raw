@@ -269,7 +269,7 @@ export default function NotesApp() {
     }
 
     try {
-      const res = await fetch(`/api/notes/${encodeURIComponent(selectedNoteId)}`, {
+      const res = await fetch(`/api/notes?id=${encodeURIComponent(selectedNoteId)}`, {
         method: "DELETE",
       });
       if (!res.ok) {
@@ -615,13 +615,24 @@ export default function NotesApp() {
         </div>
 
         {/* Toolbar */}
-        <div className={`${t.toolbar} flex relative z-10 w-full`}>
+        <div className={`${t.toolbar} flex relative z-10 w-full overflow-hidden`}>
           {theme === 'aqua' && <div className="absolute inset-0 pointer-events-none" style={{ background: t.toolbarPinstripes }}></div>}
           
-          <div className="flex items-center justify-between w-full px-2">
+          <div className="flex items-center justify-between w-full px-2 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
             {/* Left Icons */}
-            <div className="flex items-center gap-2 relative z-10 h-full">
-              <div onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)} className={`w-[28px] h-[24px] flex items-center justify-center cursor-pointer ${t.button}`}>
+            <div className="flex items-center gap-1 md:gap-2 relative z-10 h-full flex-shrink-0 mr-4">
+              {/* Mobile Back Button */}
+              <div 
+                onClick={() => {
+                  playClick();
+                  setSelectedNoteId(null);
+                }} 
+                className={`w-[28px] h-[24px] md:hidden flex items-center justify-center cursor-pointer ${!selectedNoteId ? 'opacity-50 pointer-events-none' : ''} ${t.button}`}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+              </div>
+
+              <div onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)} className={`w-[28px] h-[24px] hidden md:flex items-center justify-center cursor-pointer ${t.button}`}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line></svg>
               </div>
               <div onClick={() => setViewMode(v => v === "list" ? "gallery" : "list")} className={`w-[28px] h-[24px] flex items-center justify-center cursor-pointer ${t.button}`}>
@@ -636,7 +647,7 @@ export default function NotesApp() {
             </div>
 
             {/* Right Icons */}
-            <div className="flex items-center gap-1 relative z-10 h-full">
+            <div className="flex items-center gap-1 relative z-10 h-full flex-shrink-0">
               <div onClick={handleNewNote} className={`w-[28px] h-[24px] flex items-center justify-center cursor-pointer mr-2 ${t.button}`}>
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
               </div>
@@ -707,14 +718,14 @@ export default function NotesApp() {
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
               </div>
               
-              <div className="flex items-center bg-white border border-[#9e9e9e] px-2 py-0.5 shadow-inner w-[140px] h-[22px] mr-2">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#999" strokeWidth="2" className="mr-1.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+              <div className="flex items-center bg-white border border-[#9e9e9e] px-2 py-0.5 shadow-inner w-[100px] md:w-[140px] h-[22px] mr-1 md:mr-2 flex-shrink-0">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#999" strokeWidth="2" className="mr-1.5 flex-shrink-0"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
                 <input
                   type="text"
                   placeholder="Search"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="bg-transparent border-none outline-none text-[11px] text-[#333] w-full"
+                  className="bg-transparent border-none outline-none text-[11px] text-[#333] w-full min-w-0"
                 />
               </div>
 
@@ -755,9 +766,9 @@ export default function NotesApp() {
         </div>
 
         {/* Content Area */}
-        <div className="flex-1 flex overflow-hidden">
+        <div className="flex-1 flex overflow-hidden relative">
           {/* Sidebar */}
-          <div className={`${t.sidebar} border-r ${t.border} overflow-y-auto transition-all duration-150 ${isSidebarCollapsed ? "w-0 min-w-0 max-w-0 opacity-0 pointer-events-none" : "w-1/3 min-w-[200px] max-w-[300px]"}`}>
+          <div className={`${t.sidebar} md:border-r ${t.border} overflow-y-auto transition-all duration-150 ${isSidebarCollapsed ? "hidden md:flex md:w-0 md:min-w-0 md:max-w-0 md:opacity-0 md:pointer-events-none" : "w-full md:w-1/3 md:min-w-[200px] md:max-w-[300px]"} ${selectedNoteId ? 'hidden md:flex' : 'flex'} flex-col`}>
             {loading ? (
               <div className="p-4 text-[#8e8e93] text-sm">Loading...</div>
             ) : filteredNotes.length === 0 ? (
@@ -817,7 +828,7 @@ export default function NotesApp() {
           </div>
 
           {/* Editor */}
-          <div className={`${t.bg} flex-1 p-8 relative flex flex-col`}>
+          <div className={`${t.bg} flex-1 p-4 md:p-8 relative flex-col overflow-hidden ${!selectedNoteId ? 'hidden md:flex' : 'flex'}`}>
             <input 
               type="text"
               placeholder="Note Title"
@@ -826,7 +837,7 @@ export default function NotesApp() {
                 setTitle(e.target.value);
                 playType();
               }}
-              className={`text-[32px] font-bold border-none outline-none ${theme === 'system7' || theme === 'win98' || theme === 'winxp' ? 'text-black' : 'text-[#333333]'} placeholder-[#d1d1d6] mb-4 bg-transparent`}
+              className={`text-[24px] md:text-[32px] font-bold border-none outline-none ${theme === 'system7' || theme === 'win98' || theme === 'winxp' ? 'text-black' : 'text-[#333333]'} placeholder-[#d1d1d6] mb-2 md:mb-4 bg-transparent`}
             />
             <EditorContent
               editor={editor}

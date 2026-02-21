@@ -60,3 +60,27 @@ export async function GET() {
     );
   }
 }
+
+export async function DELETE(request) {
+  try {
+    const id = request.nextUrl?.searchParams?.get("id");
+    if (!id) {
+      return NextResponse.json({ error: "Missing note id" }, { status: 400 });
+    }
+
+    await connectToDatabase();
+
+    const note = await Note.findByIdAndDelete(id).lean();
+    if (!note) {
+      return NextResponse.json({ error: "Note not found" }, { status: 404 });
+    }
+
+    return NextResponse.json({ ok: true }, { status: 200 });
+  } catch (error) {
+    console.error("Failed to delete note:", error);
+    return NextResponse.json(
+      { error: "Failed to delete note" },
+      { status: 500 }
+    );
+  }
+}
