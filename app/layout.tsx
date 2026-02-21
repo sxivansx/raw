@@ -15,6 +15,18 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "raw",
   description: "A fun, slightly nostalgic notes app.",
+  openGraph: {
+    title: "raw",
+    description: "A fun, slightly nostalgic notes app.",
+    type: "website",
+    images: [{ url: "/opengraph-image", width: 1200, height: 630 }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "raw",
+    description: "A fun, slightly nostalgic notes app.",
+    images: ["/opengraph-image"],
+  },
 };
 
 export default function RootLayout({
